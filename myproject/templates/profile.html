@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ user.name }}'s Profile - GiGo</title>
+  <link rel="stylesheet" href="{% static 'css/styl.css' %}">
+  <style>
+    header .header-right {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+header .edit-profile-button {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    background-color: #007bff;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+header .edit-profile-button:hover {
+    background-color: #0056b3;
+}
+
+  </style>
+  <script>
+    function goBack() {
+    window.history.back();
+}
+
+  </script>
+</head>
+<body class="bg-gray-50">
+  <div class="container">
+    <!-- Sticky Header -->
+   <header class="sticky-header">
+    <div class="container">
+
+        <a href="{% url 'user_home' user_id=user.id %}" class="logo">GiGo</a>
+
+        <div class="header-right">
+            <a href="{% url 'profile_edit' user_id=user.id %}" class="edit-profile-button">Edit Profile</a>
+        </div>
+    </div>
+</header>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Profile Section -->
+      <section class="profile-section">
+        <div class="profile-container">
+          <div class="profile-header">
+            <!-- Profile Picture -->
+            <div class="profile-pic">
+              {% if user.photo %}
+              <img src="{{ user.photo.url }}" alt="{{ user.name }}" />
+              {% else %}
+              <img src="{% static 'images/default-profile.png' %}" alt="{{ user.name }}" />
+              {% endif %}
+            </div>
+
+            <!-- Profile Info -->
+            <div class="profile-info">
+              <h1 class="name">{{ user.name }}</h1>
+              <div class="stats">
+                <div class="stat">
+                  <div class="value">{{ user.jobs_completed|default:0 }}</div>
+                  <div class="label">Jobs Completed</div>
+                </div>
+                <div class="stat">
+                  <div class="value">{{ user.avg_rating|default:0|floatformat:1 }}</div>
+                  <div class="rating">
+                    {% for i in "★★★★★" %}
+                    {% if forloop.counter <= user.avg_rating|floatformat:0 %}
+                    <span class="star filled">&#9733;</span>
+                    {% else %}
+                    <span class="star">&#9734;</span>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+                  <div class="label">Average Rating</div>
+                </div>
+              </div>
+              <!-- Contact Details -->
+              <div class="contact-details">
+                <div><span class="icon">&#9742;</span> {{ user.phone }}</div>
+                <div><span class="icon">&#9993;</span> {{ user.email }}</div>
+                <div><span class="icon">&#128205;</span> {{ user.location }}</div>
+                <div><span class="icon">&#128197;</span> Member since {{ user.date_joined|date:"F Y" }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Categories Section -->
+      <section class="categories-section">
+        <div class="container">
+          <h2>Work Categories</h2>
+          <div class="categories-grid">
+            {% for category in user.categories %}
+            <div class="category-item">
+              <h3>{{ category.name }}</h3>
+              <div class="category-details">
+                <span>{{ category.jobs_count }} jobs</span>
+                <span class="category-rating">
+                  {% for i in "★★★★★" %}
+                  {% if forloop.counter <= category.rating %}
+                  <span class="star filled">&#9733;</span>
+                  {% else %}
+                  <span class="star">&#9734;</span>
+                  {% endif %}
+                  {% endfor %}
+                </span>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+      <!-- Job Status Section -->
+     <section class="job-status-section">
+  <div class="container">
+    <h2>Job Booking Status</h2>
+    {% if booked_job %}
+      <p>Your booked job: {{ booked_job.name }} (Status: {{ booked_job.status }})</p>
+    {% else %}
+      <p>No booked job. Status: Non-booked</p>
+    {% endif %}
+  </div>
+</section>
+
+      <!-- Reviews Section -->
+      <section class="reviews-section">
+        <div class="container">
+          <h2>Recent Reviews</h2>
+          <div class="reviews-list">
+            {% for review in user.reviews.all %}
+            <div class="review-item">
+              <div class="review-header">
+                <div class="review-author">
+                  <div class="author-name">{{ review.author_name }}</div>
+                  <div class="review-date">{{ review.date|timesince }} ago</div>
+                </div>
+                <div class="review-rating">
+                  {% for i in "★★★★★" %}
+                  {% if forloop.counter <= review.rating %}
+                  <span class="star filled">&#9733;</span>
+                  {% else %}
+                  <span class="star">&#9734;</span>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+              <p class="review-content">{{ review.content }}</p>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

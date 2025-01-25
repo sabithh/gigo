@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Jobs</title>
+    <link rel="stylesheet" href="#">
+    <style>
+        /* General styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Job card styling */
+        .job-card {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+        }
+        .job-card h2 {
+            margin: 0 0 10px;
+        }
+        .job-card p {
+            margin: 5px 0;
+        }
+        .job-card .highlight {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .book-btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .book-btn:hover {
+            background-color: #0056b3;
+        }
+
+        /* Booked message styling */
+        .job-card .booked-message {
+            padding: 8px;
+            background-color: #d4edda; /* Light green background */
+            color: #155724; /* Dark green text */
+            border-radius: 4px;
+            border: 1px solid #c3e6cb;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        /* Search bar styling */
+        .search-bar {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .search-bar input[type="text"] {
+            width: 300px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        .search-bar button {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .search-bar button:hover {
+            background-color: #0056b3;
+        }
+
+         /* Gigo button styling */
+    .back-button {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        color: #4682B4; /* Sky blue color for text */
+        text-decoration: none;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 8px 15px;
+        background-color: #d3eafc; /* Light background color for button */
+        border: 2px solid #4682B4;
+        border-radius: 8px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .back-button i {
+        font-size: 20px;
+        margin-right: 5px;
+        color: #4682B4; /* Matches button text */
+    }
+
+    .back-button:hover {
+        background-color: #4682B4; /* Sky blue background on hover */
+        color: #ffffff; /* White text on hover */
+    }
+    </style>
+    <script>
+        function goBack() {
+            window.history.back(); // Navigate to the previous page
+        }
+
+        function confirmBooking(jobId) {
+            if (confirm("Are you sure you want to book this job?")) {
+                // Submit booking form
+                document.getElementById(`booking-form-${jobId}`).submit();
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Back button -->
+    <a href="javascript:void(0)" onclick="goBack()" class="back-button">
+    <i>←</i> Gigo
+</a
+
+    <div class="container">
+        <h1>Available Jobs</h1>
+
+        <!-- Search bar -->
+        <div class="search-bar">
+            <form method="GET" action="{% url 'job_list' %}">
+                <input type="text" name="location" placeholder="Search by location" value="{{ request.GET.location|default_if_none:'' }}">
+                <button type="submit">Search</button>
+            </form>
+        </div>
+
+        {% if jobs %}
+            {% for job in jobs %}
+                <div class="job-card">
+                    <h2>{{ job.name }}</h2>
+                    <p><strong>Location:</strong> {{ job.location }}</p>
+                    <p><strong>Amount:</strong> ${{ job.amount }}</p>
+                    <p><strong>Date:</strong> {{ job.date }}</p>
+                    <p><strong>Time:</strong> {{ job.time }}</p>
+                    <p><strong>Available Slots:</strong> {{ job.available_slot }}</p>
+
+                    {% if job.booked_by == request.user %}
+                        <!-- Show booked message if the job is already booked -->
+                        <div class="booked-message">Booked</div>
+                    {% else %}
+                        <!-- Booking button -->
+                        <form id="booking-form-{{ job.id }}" method="POST" action="{% url 'book_job' job.id %}">
+                            {% csrf_token %}
+                            <a href="{% url 'login' %}"></a><button type="button" class="book-btn">Book</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No jobs available for the specified location.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

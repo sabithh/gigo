@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ user.name }}'s Profile - GiGo</title>
+  <link rel="stylesheet" href="{% static 'css/styl.css' %}">
+  <style>
+    /* Add your styles here */
+  </style>
+  <script>
+    function goBack() {
+      window.history.back();
+    }
+  </script>
+</head>
+<body class="bg-gray-50">
+  <div class="container">
+    <!-- Sticky Header -->
+    <header class="sticky-header">
+      <div class="container">
+        <a href="{% url 'admin_home' user_id=user.id %}" class="logo">GiGo</a>
+        <div class="header-right">
+            <a href="{% url 'admin_profile_edit' user_id=user.id %}" class="edit-profile-button">Edit Profile</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Profile Section -->
+      <section class="profile-section">
+        <div class="profile-container">
+          <div class="profile-header">
+            <!-- Profile Picture -->
+            <div class="profile-pic">
+              {% if user.photo %}
+              <img src="{{ user.photo.url }}" alt="{{ user.name }}" />
+              {% else %}
+              <img src="{% static 'images/default-profile.png' %}" alt="{{ user.name }}" />
+              {% endif %}
+            </div>
+
+            <!-- Profile Info -->
+            <div class="profile-info">
+              <h1 class="name">{{ user.name }}</h1>
+              <div class="stats">
+                <div class="stat">
+                  <div class="value">{{ total_jobs }}</div>
+                  <div class="label">Jobs Posted</div>
+                </div>
+                <div class="stat">
+                  <div class="value">{{ completed_jobs }}</div>
+                  <div class="label">Completed Jobs</div>
+                </div>
+              </div>
+              <!-- Contact Details -->
+              <div class="contact-details">
+                <div><span class="icon">&#9742;</span> {{ user.phone }}</div>
+                <div><span class="icon">&#9993;</span> {{ user.email }}</div>
+                <div><span class="icon">&#128205;</span> {{ user.location }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Jobs Section -->
+      <section class="jobs-section">
+        <div class="container">
+          <h2>Jobs Posted</h2>
+          <div class="jobs-list">
+            {% for job in jobs %}
+            <div class="job-item">
+              <h3>{{ job.name }} - {{ job.location }}</h3>
+              <div class="job-status">
+                Status: {% if job.status == 'A' %}Accepted{% elif job.status == 'P' %}Pending{% else %}Declined{% endif %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</body>
+</html>

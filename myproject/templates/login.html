@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiGo - Sliding Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jost:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}">
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: 'Jost', sans-serif;
+        background: linear-gradient(to bottom, #B0E0E6, #F0FFFF); /* Lighter shades: Powder blue to azure */
+    }
+
+    .container {
+        width: 400px;
+        height: 550px;
+        background: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); /* Softer shadow */
+        overflow: hidden;
+        position: relative;
+    }
+
+    .form-box {
+        width: 200%;
+        height: 100%;
+        display: flex;
+        transition: transform 0.6s ease-in-out;
+    }
+
+    .form {
+        width: 50%;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .signup {
+        background: #F0FFFF; /* Light azure */
+    }
+
+    .login {
+        background: #B0E0E6; /* Powder blue */
+    }
+
+    h2 {
+        color: #2C3E50; /* Dark slate gray */
+        margin-bottom: 20px;
+    }
+
+    input {
+        width: 90%;
+        padding: 12px;
+        margin: 10px 0;
+        border: 1px solid #D3D3D3; /* Light gray */
+        border-radius: 5px;
+        outline: none;
+        font-size: 14px;
+        transition: border-color 0.3s ease;
+    }
+
+    input:focus {
+        border-color: #4682B4; /* Steel blue */
+    }
+
+    button {
+        width: 90%;
+        padding: 12px;
+        background: #4682B4; /* Steel blue */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+    }
+
+    button:hover {
+        background: #5B9BD5; /* Softer blue hover */
+    }
+
+    .toggle-button {
+        position: absolute;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: none;
+        border: none;
+        font-size: 16px;
+        color: #2C3E50;
+        cursor: pointer;
+    }
+
+    .gigo-link {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        text-decoration: none;
+        color: white;
+        background: #2C3E50;
+        padding: 8px 15px;
+        border-radius: 5px;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background 0.3s ease;
+    }
+
+    .gigo-link:hover {
+        background: #5B9BD5; /* Softer blue hover */
+    }
+
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 5px;
+        text-align: center;
+    }
+    .messages {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    z-index: 1000;
+}
+
+.message {
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.message.error {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.message.success {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+</style>
+
+</head>
+
+<body>
+    <a href="{% url 'home' %}" class="gigo-link">GiGo</a>
+
+    <div class="container">
+        <div class="form-box" id="form-box">
+            <!-- Sign Up Form -->
+            <form method="POST" action="{% url 'signup' %}" class="form signup">
+                {% csrf_token %}
+                <h2>Sign Up</h2>
+
+                <input type="text" name="identifier" placeholder="Email or Phone" required>
+                {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+                {% if form.identifier.errors %}
+
+                    <div class="error-message">
+                        {% for error in form.identifier.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <input type="password" name="password" placeholder="Password" required>
+                {% if form.password.errors %}
+                    <div class="error-message">
+                        {% for error in form.password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                {% if form.confirm_password.errors %}
+                    <div class="error-message">
+                        {% for error in form.confirm_password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <button type="submit">Sign Up</button>
+            </form>
+
+            <!-- Login Form -->
+            <form method="POST" action="{% url 'login' %}" class="form login">
+                {% csrf_token %}
+                <h2>Login</h2>
+                <input type="text" name="identifier" placeholder="Email or Phone" required>
+                {% if form.identifier.errors %}
+                    <div class="error-message">
+                        {% for error in form.identifier.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <input type="password" name="password" placeholder="Password" required>
+                {% if form.password.errors %}
+                    <div class="error-message">
+                        {% for error in form.password.errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                <button type="submit">Login</button>
+            </form>
+        </div>
+        <button class="toggle-button" onclick="toggleForm()">Switch to Login</button>
+    </div>
+
+    <script>
+        const formBox = document.getElementById('form-box');
+        const toggleButton = document.querySelector('.toggle-button');
+        let isLogin = false;
+
+        function toggleForm() {
+            if (isLogin) {
+                formBox.style.transform = 'translateX(0)';
+                toggleButton.textContent = 'Switch to Login';
+            } else {
+                formBox.style.transform = 'translateX(-50%)';
+                toggleButton.textContent = 'Switch to Sign Up';
+            }
+            isLogin = !isLogin;
+        }
+    </script>
+</body>
+
+</html>

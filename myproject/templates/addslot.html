@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiGo Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Previous styles remain the same */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .search-dropdown {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            width: 100%;
+            max-height: 200px;
+            overflow-y: auto;
+            background: white;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+            margin-top: 0.25rem;
+            z-index: 1000;
+        }
+
+        .dropdown-item {
+            padding: 0.75rem;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #F3F4F6;
+        }
+
+        .submit-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: #3B82F6;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
+            background: #2563EB;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+{% for i in user %}
+    <header class="sticky-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <a href="{% url 'admin_home' user_id=user.id %}">
+                <h1 class="text-2xl font-bold text-gray-900">GiGo Admin</h1>
+            </a>
+        </div>
+    </header>
+
+    <div class="form-container">
+        <form id="booking-form" action="{% url 'addslot' user_id=user.id %}" method="POST">
+            {% csrf_token %}
+
+
+            <div class="form-group">
+                <label class="form-label">Category</label>
+                <div class="search-dropdown">
+                    <input type="text" name="category" class="search-input" placeholder="Search categories..." id="category-search" required>
+                    <div class="dropdown-content" id="category-dropdown">
+                        <div class="dropdown-item" data-value="catering">Catering</div>
+                        <div class="dropdown-item" data-value="painting">Painting</div>
+                        <div class="dropdown-item" data-value="delivery">Delivery</div>
+                        <div class="dropdown-item" data-value="packing">Packing</div>
+                        <div class="dropdown-item" data-value="cleaning">Cleaning</div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Name</label>
+                <input type="text" name="name" class="form-input" placeholder="Enter  Name" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Location</label>
+                <input type="text" name="location" class="form-input" placeholder="Enter location" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Amount (₹)</label>
+                <input type="number" name="amount" class="form-input" placeholder="Enter amount" step="0.01" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Date</label>
+                <input type="date" name="date" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Time</label>
+                <input type="time" name="time" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Available Slots</label>
+                <input type="number" name="available_slot" class="form-input" value="10" min="1" required>
+            </div>
+
+            <button type="submit" class="submit-button">Create Job</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('category-search');
+            const dropdown = document.getElementById('category-dropdown');
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            const form = document.getElementById('booking-form');
+
+            searchInput.addEventListener('focus', () => {
+                dropdown.style.display = 'block';
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                const searchText = e.target.value.toLowerCase();
+                dropdownItems.forEach(item => {
+                    const itemText = item.textContent.toLowerCase();
+                    item.style.display = itemText.includes(searchText) ? 'block' : 'none';
+                });
+            });
+
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    searchInput.value = item.textContent;
+                    dropdown.style.display = 'none';
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        });
+    </script>
+{% endfor %}
+</body>
+</html>

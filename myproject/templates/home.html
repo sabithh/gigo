@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiGo - Your Gateway to Part-Time Success</title>
+    <link rel="stylesheet" href="{% static 'css/styles2.css' %}">
+</head>
+
+<body>
+    <!-- Sticky Header -->
+    <header class="sticky-header">
+        <div class="container">
+            <div class="header-left">
+                <h1 href="{% url 'home' %}" class="logo">GiGo</h1>
+            </div>
+            <div class="header-right">
+                <a href="{% url 'login' %}" class="login">Login</a>
+                <a href="{% url 'login' %}" class="signup">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Welcome to GiGo: Your Gateway to Part-Time Success!</h1>
+            <p>Discover flexible job opportunities tailored to your skills.</p>
+            <div class="hero-actions">
+                <a href="{% url 'browse2'   %}" class="primary-btn">Browse Jobs</a>
+                <!-- Updated Search Bar -->
+                <div class="search-bar">
+                    <input type="text" placeholder="Search for part-time jobs (e.g., Catering, delivery)">
+                    <span class="search-icon">&#128269;</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="categories">
+      <div class="container">
+        <h2>Popular Categories</h2>
+        <div class="category-list">
+          <div class="category-item">🍽️ Catering</div>
+          <div class="category-item">🚚 Delivery</div>
+          <div class="category-item">🎨 Painting</div>
+          <div class="category-item">📦 Packing</div>
+          <div class="category-item">🧹 Cleaning</div>
+          <div class="category-item">🎉 Events</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2>How It Works</h2>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon">💼</div>
+                    <h3>Job Seekers</h3>
+                    <p>Explore listings and apply for part-time opportunities that suit you.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">⏰</div>
+                    <h3>Admins</h3>
+                    <p>Post job details, eligibility criteria, and requirements with ease.</p>
+                </div>
+                <div class="step">
+                    <div class="step-icon">✅</div>
+                    <h3>Connect</h3>
+                    <p>Collaborate seamlessly and achieve mutual success.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready to start your part-time journey? Join GiGo today!</h2>
+            <div class="cta-buttons">
+                <a href="{% url 'login' %}" class="primary-btn">Sign Up as a Job Seeker</a>
+                <a href="{% url 'admin_signup' %}" class="secondary-btn">Sign Up as an Admin</a>
+            </div>
+        </div>
+    </section>
+
+
+</body>
+
+</html>

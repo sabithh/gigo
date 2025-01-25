@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up & Login</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const passwordField = document.getElementById("password");
+            const confirmPasswordField = document.getElementById("confirm_password");
+            const passwordError = document.getElementById("password-error");
+            const strengthMessage = document.getElementById("password-strength");
+
+            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+            passwordField.addEventListener("input", function () {
+                if (!strongPasswordRegex.test(passwordField.value)) {
+                    strengthMessage.textContent = "Weak Password: Must include uppercase, lowercase, number, and special character.";
+                    strengthMessage.style.color = "red";
+                } else {
+                    strengthMessage.textContent = "Strong Password";
+                    strengthMessage.style.color = "green";
+                }
+            });
+
+            confirmPasswordField.addEventListener("input", function () {
+                if (confirmPasswordField.value !== passwordField.value) {
+                    passwordError.textContent = "Passwords do not match.";
+                } else {
+                    passwordError.textContent = "";
+                }
+            });
+        });
+
+        function validatePassword() {
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("confirm_password").value;
+            const strongPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+            if (!strongPasswordRegex.test(password)) {
+                alert("Password must include uppercase, lowercase, number, and special character.");
+                return false;
+            }
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match.");
+                return false;
+            }
+
+            return true;
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Jost', sans-serif;
+            background: linear-gradient(to bottom, #87CEFA, #FFFFFF); /* Sky Blue to White gradient */
+        }
+
+        .main {
+            width: 350px;
+            height: 500px;
+            background: #ffffff; /* White Background */
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            color: #4682B4; /* Sky Blue */
+            text-decoration: none;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .back-button:hover {
+            color: #5A9BD8; /* Lighter Sky Blue */
+        }
+
+        label {
+            color: #4682B4; /* Sky Blue */
+            font-size: 1.8em;
+            text-align: center;
+            display: block;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 80%;
+            height: 40px;
+            margin: 10px auto;
+            display: block;
+            padding: 0 10px;
+            background: #f0f8ff; /* Light Blue Background */
+            border: 1px solid #87CEFA; /* Sky Blue Border */
+            border-radius: 5px;
+            outline: none;
+            font-size: 1em;
+            color: #333;
+        }
+
+        button {
+            width: 80%;
+            height: 45px;
+            margin: 20px auto;
+            display: block;
+            font-size: 1em;
+            font-weight: bold;
+            color: #ffffff;
+            background: #4682B4; /* Sky Blue */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #5A9BD8; /* Lighter Sky Blue */
+        }
+
+        .error {
+            color: red;
+            font-size: 0.85em;
+            margin: 10px auto;
+            text-align: center;
+        }
+
+        #password-strength {
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        #password-error {
+            font-size: 0.9em;
+            color: red;
+            margin-top: -5px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <a href="javascript:void(0)" onclick="goBack()" class="back-button">Gigo</a>
+
+    <div class="main">
+        <input type="checkbox" id="chk" aria-hidden="true">
+
+        <div class="signup">
+            {% if success_message %}
+            <p style="color: green; font-weight: bold;">{{ success_message }}</p>
+            {% endif %}
+
+            {% if form.errors %}
+            <ul class="error">
+                {% for error in form.errors.values %}
+                <li>{{ error|striptags }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
+            <form method="POST" action="{% url 'admin_signup' %}" onsubmit="return validatePassword()">
+                {% csrf_token %}
+                <label for="chk" aria-hidden="true">Sign Up</label>
+                <input type="text" name="identifier" placeholder="Email or Phone Number" required>
+                <input type="password" id="password" name="password" placeholder="Password" required>
+                <div id="password-strength"></div>
+                <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+                <div id="password-error" class="error"></div>
+                <button type="submit">Sign Up</button>
+            </form>
+        </div>
+    </div>
+</body>
+
+</html>

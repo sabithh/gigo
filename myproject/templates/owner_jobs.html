@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Jobs</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .job-card {
+            border: 1px solid #ccc;
+            padding: 16px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+        .job-card h2 {
+            margin: 0;
+        }
+        .job-card p {
+            margin: 5px 0;
+        }
+        .applicant {
+            margin: 10px 0;
+            border: 1px dashed #ccc;
+            padding: 8px;
+            background-color: #f7f7f7;
+        }
+        .action-btns {
+            margin-top: 10px;
+        }
+        .accept-btn, .decline-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .accept-btn {
+            background-color: #28a745;
+            color: #fff;
+        }
+        .accept-btn:hover {
+            background-color: #218838;
+        }
+        .decline-btn {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .decline-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Manage Your Jobs</h1>
+        {% for job in owner_jobs %}
+            <div class="job-card">
+                <h2>{{ job.name }}</h2>
+                <p><strong>Location:</strong> {{ job.location }}</p>
+                <p><strong>Amount:</strong> ${{ job.amount }}</p>
+                <p><strong>Date:</strong> {{ job.date }}</p>
+                <p><strong>Time:</strong> {{ job.time }}</p>
+                <h3>Applicants:</h3>
+                {% if job.booking_requests.exists %}
+                    {% for request in job.booking_requests.all %}
+                        <div class="applicant">
+                            <p><strong>Name:</strong> {{ request.user.name }}</p>
+                            <p><strong>Email:</strong> {{ request.user.email }}</p>
+                            <div class="action-btns">
+                                <form method="POST" action="{% url 'accept_request' request.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="accept-btn">Accept</button>
+                                </form>
+                                 <form method="POST" action="{% url 'decline_request' request.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="decline-btn">Decline</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>No applications yet.</p>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

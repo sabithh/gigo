@@ -1,0 +1,348 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiGo - {{ category }} Jobs</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .header h1 {
+            color: #2563eb;
+            font-size: 1.5rem;
+        }
+
+        .page-title {
+            max-width: 1200px;
+            margin: 2rem auto 1rem;
+            padding: 0 1rem;
+            color: #1f2937;
+            font-size: 1.75rem;
+            font-weight: 600;
+        }
+
+        /* Updated date selector styles to match container width */
+        .date-selector {
+            max-width: 1200px;
+            margin: 0 auto 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .date-strip {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+            scrollbar-width: none;
+        }
+
+        .date-strip::-webkit-scrollbar {
+            display: none;
+        }
+
+        .date-card {
+            min-width: 100px;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .date-card:hover {
+            border-color: #2563eb;
+        }
+
+        .date-card.selected {
+            background-color: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 1rem auto;
+            padding: 0 1rem;
+        }
+
+        .job-section {
+            background: white;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            display: none; /* Hide by default */
+        }
+
+        .job-section.visible {
+            display: block; /* Show when date matches */
+        }
+
+        .job-section:hover {
+            transform: translateY(-2px);
+        }
+
+        .job-header {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .job-title {
+            color: #1f2937;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .job-meta {
+            color: #374151;
+            font-size: 1.125rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .meta-item-bold {
+            font-weight: 600;
+        }
+
+        .salary {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        /* Rest of the styles remain the same */
+        .progress-section {
+            text-align: right;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #2563eb;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .join-button {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .join-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        @media (max-width: 768px) {
+            .job-header {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-section {
+                text-align: left;
+            }
+
+            .progress-bar {
+                width: 100%;
+            }
+        }
+         .back-button {
+            background-color: #2563eb;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
+    <script>
+        function goBack() {
+            window.history.back(); // Navigate to the previous page
+        }
+
+        function confirmBooking(jobId) {
+            if (confirm("Are you sure you want to book this job?")) {
+                // Submit booking form
+                document.getElementById(`booking-form-${jobId}`).submit();
+            }
+        }
+    </script>
+</head>
+<body>
+    <header class="header">
+    </header>
+
+    <h2 class="page-title">Available {{ category }} Jobs</h2>
+
+    <div class="date-selector">
+        <div class="date-strip">
+            {% for date in dates %}
+            <div class="date-card {% if forloop.first %}selected{% endif %}" data-date="{{ date.date }}">
+                <div class="day">{{ date.day }}</div>
+                <div class="date">{{ date.date }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="container">
+        {% for job in jobs %}
+       <div class="job-section" data-date="{{ job.date|date:'M d' }}">
+    <div class="job-header">
+        <div>
+            <div class="job-title">{{ job.name }}</div>
+            <div class="job-meta">
+                <span class="meta-item"><span class="meta-item-bold">📍 {{ job.location }}</span></span>
+                <span class="meta-item"><span class="meta-item-bold">📅 {{ job.date|date:'M d, Y' }}</span></span>
+                <span class="meta-item"><span class="meta-item-bold">⏰ {{ job.time|time:'g:i A' }}</span></span>
+                <span class="meta-item salary"><span class="meta-item-bold">💰 ₹{{ job.amount }}/shift</span></span>
+            </div>
+        </div>
+        <div class="progress-section">
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {% widthratio job.available_slot job.total_positions 100 %}%"></div>
+            </div>
+            <div class="progress-text">{{ job.available_slot }}/{{ job.total_positions }} Slots Available</div>
+            <div class="status {% if job.available_slot == 0 %}status-completed{% else %}status-pending{% endif %}">
+                {% if job.available_slot == 0 %}Completed{% else %}Available{% endif %}
+            </div>
+            <form method="post" action="{% url 'book_job' job.id %}" id="booking-form-{{ job.id }}">
+                {% csrf_token %}
+                <button type="button" class="join-button"
+                        {% if job.available_slot == 0 %}disabled style="opacity: 0.5; cursor: not-allowed;"{% endif %}
+                        onclick="confirmBooking({{ job.id }})">
+                    Join
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+        {% endfor %}
+    </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateCards = document.querySelectorAll('.date-card');
+        const jobSections = document.querySelectorAll('.job-section');
+
+        function filterJobs(selectedDate) {
+            jobSections.forEach(job => {
+                const jobDate = job.getAttribute('data-date');
+                if (jobDate === selectedDate) {
+                    job.classList.add('visible');
+                } else {
+                    job.classList.remove('visible');
+                }
+            });
+        }
+
+        // Initial load - select first date and filter jobs
+        const firstDateCard = dateCards[0];
+        firstDateCard.classList.add('selected');
+        filterJobs(firstDateCard.getAttribute('data-date'));
+
+        // Date selection event listeners
+        dateCards.forEach(card => {
+            card.addEventListener('click', () => {
+                // Remove selected from all cards
+                dateCards.forEach(c => c.classList.remove('selected'));
+
+                // Add selected to clicked card
+                card.classList.add('selected');
+
+                // Filter jobs
+                const selectedDate = card.getAttribute('data-date');
+                filterJobs(selectedDate);
+            });
+        });
+
+        function confirmBooking(jobId) {
+            if (confirm("Are you sure you want to book this job?")) {
+                document.getElementById(`booking-form-${jobId}`).submit();
+            }
+        }
+    });
+</script>
+</body>
+</html>

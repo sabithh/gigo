@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiGo Admin - Job Status</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            margin-top: 4rem;
+        }
+
+        .job-listings-container {
+            margin-top: 2rem;
+            padding: 0 2rem;
+        }
+
+        .job-section {
+            background: white;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .job-section:hover {
+            transform: translateY(-2px);
+        }
+
+        .job-header {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .job-title {
+            color: #1f2937;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .job-meta {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .status-section {
+            text-align: right;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-P {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-A {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-D {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .price-tag {
+            background: #f3f4f6;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            color: #374151;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .job-details {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: none;
+        }
+
+        .job-details.active {
+            display: block;
+        }
+
+        .detail-section {
+            margin-bottom: 1rem;
+        }
+
+        .detail-section h3 {
+            color: #374151;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-section p {
+            color: #6b7280;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        header.sticky-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        header.sticky-header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        header.sticky-header .logo {
+            color: #2563eb;
+            font-size: 1.5rem;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .booked-by {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #f3f4f6;
+            border-radius: 0.375rem;
+        }
+
+        @media (max-width: 768px) {
+            .job-header {
+                grid-template-columns: 1fr;
+            }
+
+            .status-section {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% for i in user %}
+    <header class="sticky-header">
+        <div class="container">
+            <div>
+                <a href="{% url 'admin_home' user_id=user.id %}" class="logo">GiGo Admin</a>
+            </div>
+        </div>
+    </header>
+    {% endfor %}
+
+    <div class="job-listings-container">
+        <div class="container">
+            {% for job in jobs %}
+            <div class="job-section">
+                <div class="job-header" onclick="toggleDetails(this)">
+                    <div>
+                        <div class="job-title">{{ job.name }}</div>
+                        <div class="job-meta">
+                            📍 {{ job.location }} • 📅 {{ job.date|date:"M d, Y" }} • ⏰ {{ job.time|time:"g:i A" }}
+                        </div>
+                    </div>
+                    <div class="price-tag">
+                        ₹{{ job.amount }}
+                    </div>
+                    <div class="status-section">
+                        <div class="status status-{{ job.status }}">
+                            {% if job.status == 'P' %}
+                                Pending
+                            {% elif job.status == 'A' %}
+                                Accepted
+                            {% else %}
+                                Declined
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="job-details">
+                    <div class="detail-section">
+                        <h3>Available Slots</h3>
+                        <p>{{ job.available_slot }}</p>
+                    </div>
+                    {% if job.booked_by %}
+                    <div class="detail-section">
+                        <h3>Booked By</h3>
+                        <div class="booked-by">
+                            <p>{{ job.booked_by.name }}</p>
+                            <p>{{ job.booked_by.email }}</p>
+                            {% if job.booked_by.phone %}
+                                <p>📞 {{ job.booked_by.phone }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <p>No jobs found.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function toggleDetails(header) {
+            const details = header.nextElementSibling;
+            details.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

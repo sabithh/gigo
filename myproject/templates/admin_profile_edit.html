@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GiGo - Edit Profile</title>
+    <link rel="stylesheet" href="{% static 'css/styleses.css' %}">
+    <script>
+        document.querySelector('.upload-btn').addEventListener('change', function(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.querySelector('.profile-picture img').src = e.target.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        });
+    </script>
+</head>
+<body>
+    <header>
+        <a href="{% url 'admin_profile' user_id=user.id %}" class="logo">GiGo</a>
+    </header>
+
+    <main class="container">
+        <!-- Profile Picture Section -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="profile-picture">
+                {% if user.photo %}
+                    <img src="{{ user.photo.url }}" alt="Profile Picture">
+                {% else %}
+                    <img src="https://via.placeholder.com/150" alt="Profile Picture">
+                {% endif %}
+                <input type="file" name="photo" accept="image/*" class="upload-btn">
+            </div>
+
+            <!-- User Details Form -->
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" value="{{ user.name }}" placeholder="Enter your name">
+            </div>
+
+
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="text" id="phone" name="phone" value="{{ user.phone }}" placeholder="Enter your phone number">
+            </div>
+
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" value="{{ user.place }}" placeholder="Enter your location">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" value="{{ user.email }}" disabled>
+            </div>
+
+            <!-- Job Categories Section -->
+            <div class="job-categories">
+                <h2>Favorable Job Categories</h2>
+                <div class="categories-grid">
+                    {% for category in job_categories %}
+                        <div class="category-item">
+                            <input
+                                type="checkbox"
+                                id="{{ category|lower }}"
+                                name="job_categories"
+                                value="{{ category }}"
+                                {% if category in selected_categories %}checked{% endif %}
+                            >
+                            <label for="{{ category|lower }}">{{ category }}</label>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Save Changes Button -->
+            <div class="save-container">
+                <button type="submit" class="save-btn">Save Changes</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

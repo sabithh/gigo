@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .job-detail {
+            margin-bottom: 20px;
+        }
+        .job-detail p {
+            margin: 5px 0;
+        }
+        .book-btn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: block;
+            width: 100%;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .book-btn:hover {
+            background-color: #0056b3;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        .alert {
+            color: #28a745;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ job.name }}</h1>
+        <div class="job-detail">
+            <p><strong>Location:</strong> {{ job.location }}</p>
+            <p><strong>Amount:</strong> ${{ job.amount }}</p>
+            <p><strong>Date:</strong> {{ job.date }}</p>
+            <p><strong>Time:</strong> {{ job.time }}</p>
+            <p><strong>Slots Available:</strong> {{ job.available_slot }}</p>
+        </div>
+
+        {% if job.booked_by == request.user %}
+            <!-- Already Booked -->
+            <div class="alert">You have already booked this job.</div>
+        {% else %}
+            <!-- Booking Form -->
+            <form method="POST" action="{% url 'book_job' job.id %}">
+                {% csrf_token %}
+                <button type="submit" class="book-btn">Book Now</button>
+            </form>
+        {% endif %}
+
+        <!-- Back to List Link -->
+        <div class="back-link">
+            <a href="{% url 'job_list' %}">← Back to Job List</a>
+        </div>
+    </div>
+</body>
+</html>
