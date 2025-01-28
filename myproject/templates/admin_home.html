@@ -58,12 +58,11 @@
 </head>
 
 <body>
-    {% for i in user %}
     <!-- Sticky Header -->
     <header class="sticky-header">
         <div class="container">
             <div class="header-left">
-                <h1><a href="{% url 'admin_home' user_id=user.id %}" class="logo">GiGo Admin</a></h1>
+                <h1><a href="{% url 'admin_home' user.id %}" class="logo">GiGo Admin</a></h1>
             </div>
 
             <div class="header-right">
@@ -73,7 +72,7 @@
                         <div class="dropdown">
                             <button>
                                 {% if i.photo %}
-                                    <img src="{{ i.photo.url }}" height="50" width="50" style="border-radius: 50%;">
+                                    <img src="{{ user.photo.url }}" height="50" width="50" style="border-radius: 50%;">
                                 {% else %}
                                     <svg class="icon nav-list__icon">
                                         <use xlink:href="#icon-user"></use>
@@ -120,7 +119,6 @@
             </div>
         </div>
     </section>
-    {% endfor %}
 </body>
 
 </html>

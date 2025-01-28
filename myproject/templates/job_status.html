@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .job-container {
+            margin: 10px auto;
+            width: 80%;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+        .job-header {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .job-details {
+            margin-bottom: 10px;
+        }
+        .job-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .button {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .button-accept {
+            background-color: #28a745;
+            color: white;
+        }
+        .button-accept:hover {
+            background-color: #218838;
+        }
+        .button-decline {
+            background-color: #dc3545;
+            color: white;
+        }
+        .button-decline:hover {
+            background-color: #c82333;
+        }
+        .button-remove {
+            background-color: #6c757d;
+            color: white;
+        }
+        .button-remove:hover {
+            background-color: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <h1>Job Status</h1>
+
+    {% if jobs %}
+        {% for job in jobs %}
+            <div class="job-container">
+                <div class="job-header">{{ job.name }}</div>
+                <div class="job-details">
+                    <p>Category: {{ job.category }}</p>
+                    <p>Location: {{ job.location }}</p>
+                    <p>Date: {{ job.date }}</p>
+                    <p>Time: {{ job.time }}</p>
+                    <p>Status: {{ job.get_status_display }}</p>
+                </div>
+                <div class="job-actions">
+                    {% if job.status == "P" %}
+                        <form action="{% url 'change_job_status' job.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="A">
+                            <button type="submit" class="button button-accept">Accept</button>
+                        </form>
+                        <form action="{% url 'change_job_status' job.id %}" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="status" value="D">
+                            <button type="submit" class="button button-decline">Decline</button>
+                        </form>
+                    {% endif %}
+                    <form action="{% url 'remove_job' job.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="button button-remove">Remove</button>
+                    </form>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No jobs booked.</p>
+    {% endif %}
+</body>
+</html>

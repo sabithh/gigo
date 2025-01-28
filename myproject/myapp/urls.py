@@ -23,6 +23,10 @@ urlpatterns = [
     path('addslot/<int:user_id>/', views.addslot, name='addslot'),
     path('status/<int:user_id>/', views.status, name='status'),
     path('categories/<str:name>/', views.categories, name='categories'),
+    path('job_status/', views.job_status, name='job_status'),
+    path('cancel-booking/<int:booking_id>/', views.cancel_booking, name='cancel_booking'),
+    path('change-booking-status/<int:booking_id>/', views.change_booking_status, name='change_booking_status'),
+    path('remove-job/<int:job_id>/', views.remove_job, name='remove_job'),
 ]
 # urlpatterns = [
 #     path('',views.home,name='home'),  # Home page

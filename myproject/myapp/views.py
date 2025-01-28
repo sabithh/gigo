@@ -54,37 +54,6 @@ def signup(request):
 
     return render(request, 'signup.html')
 
-# def login(request):
-#     """Custom login view."""
-#     if request.method == 'POST':
-#         identifier = request.POST.get('identifier')
-#         password = request.POST.get('password')
-#
-#         if not identifier or not password:
-#             messages.error(request, "Both fields are required.")
-#             return render(request, 'login.html')  # Change redirect to render
-#
-#         user = None
-#         try:
-#             user = UserModel.objects.get(Q(email=identifier) | Q(phone=identifier))
-#             is_user_model = True
-#         except UserModel.DoesNotExist:
-#             try:
-#                 user = Owners.objects.get(Q(email=identifier) | Q(phone=identifier))
-#                 is_user_model = False
-#             except Owners.DoesNotExist:
-#                 user = None
-#
-#         if user:
-#             if is_user_model and user.check_password(password):
-#                 return redirect("user_home", identifier)
-#             elif not is_user_model and check_password(password, user.password):
-#                 return redirect("admin_home", identifier)
-#
-#         messages.error(request, "Invalid email/phone or password.")
-#         return render(request, 'login.html')  # Change redirect to render
-#
-#     return render(request, 'login.html')
 def login(request):
     """Custom login view."""
     if request.method == 'POST':
@@ -144,9 +113,21 @@ def user_home(request, user_id):
 # Browse Jobs View
 def browse(request, user_id):
     location = request.GET.get('location', '')
-    jobs = Jobs.objects.filter(location__icontains=location, status='P') if location else Jobs.objects.filter(status='P')
-    user =  get_object_or_404(UserModel, id=user_id)
-    return render(request, 'browse.html', {'jobs': jobs, 'user': user, 'user_id': user_id})
+    jobs = Jobs.objects.filter(location__icontains=location)
+    if location:
+        jobs = jobs.filter(location__icontains=location)
+
+    # Annotate jobs with booking information
+    for job in jobs:
+        job.user_has_booked = job.bookings.filter(user_id=user_id).exists()
+        job.remaining_slots = job.get_remaining_slots()
+
+    user = get_object_or_404(UserModel, id=user_id)
+    return render(request, 'browse.html', {
+        'jobs': jobs,
+        'user': user,
+        'user_id': user_id
+    })
 
 # Book Job View
 def book_job(request, job_id, user_id):
@@ -154,24 +135,27 @@ def book_job(request, job_id, user_id):
         job = get_object_or_404(Jobs, id=job_id)
         user = get_object_or_404(UserModel, id=user_id)
 
-        if job.booked_by:
-            messages.error(request, 'This job has already been booked.')
+        # Check if user already has a booking for this job
+        existing_booking = JobBooking.objects.filter(job=job, user=user).exists()
+        if existing_booking:
+            messages.error(request, 'You have already booked this job.')
             return redirect('browse', user_id=user_id)
 
-        if job.available_slot > 0:
-            job.booked_by = user
-            job.available_slot -= 1
-            job.status = 'A'
-            job.save()
-            messages.success(request, 'Job booked successfully!')
+        # Check if slots are available
+        if job.get_remaining_slots() > 0:
+            JobBooking.objects.create(
+                job=job,
+                user=user,
+                status='P'
+            )
+            messages.success(request, 'Job booking request submitted successfully!')
         else:
             messages.error(request, 'No slots available for this job.')
 
         return redirect('user_home', user_id=user_id)
-
 # Admin Home View
-def admin_home(request, user_id):
-    user = Owners.objects.filter(id=user_id)
+def admin_home(request,user_id):
+    user = get_object_or_404(Owners, id=user_id)
     return render(request, 'admin_home.html', {"user": user})
 
 # Admin Profile View
@@ -220,73 +204,9 @@ def addslot(request, user_id):
 # Job Status View
 def status(request, user_id):
     user = get_object_or_404(UserModel, id=user_id)
-    jobs = Jobs.objects.filter(booked_by=user)
-    return render(request, 'status.html', {'jobs': jobs, 'user': user})
+    bookings = JobBooking.objects.filter(user=user).select_related('job')
+    return render(request, 'status.html', {'bookings': bookings, 'user': user})
 
-
-# def profile(request, email):
-#     user = get_object_or_404(UserModel, email=email)
-#
-#     # Check if the user has any booked job
-#     booked_job = Jobs.objects.filter(booked_by=user).first()  # Get the first job booked by the user
-#
-#     # Pass the booked job status to the template
-#     return render(request, 'profile.html', {
-#         'user': user,
-#         'booked_job': booked_job  # Pass the booked job to the template
-#     })
-# def user_home(request, email):
-#     details = UserModel.objects.filter(email=email)
-#     return render(request, 'user_home.html', {"details": details})
-#
-#
-# def browse(request, email):
-#     # Get search parameter
-#     location = request.GET.get('location', '')
-#
-#     # Filter jobs based on location if provided
-#     if location:
-#         jobs = Jobs.objects.filter(location__icontains=location, status='P')
-#     else:
-#         jobs = Jobs.objects.filter(status='P')  # Only show pending jobs
-#
-#     user = UserModel.objects.filter(email=email)
-#
-#     context = {
-#         'jobs': jobs,
-#         'request': request,
-#         'user': user,
-#         'email': email
-#     }
-#     return render(request, 'browse.html', context)
-#
-#
-#
-# def book_job(request, job_id,email):
-#     if request.method == 'POST':
-#         job = get_object_or_404(Jobs, id=job_id)
-#         user = get_object_or_404(UserModel, email=email)
-#
-#         # Check if job is already booked
-#         if job.booked_by:
-#             messages.error(request, 'This job has already been booked.')
-#             return redirect('browse', email=email)
-#
-#         # Check if slots are available
-#         if job.available_slot > 0:
-#             # Book the job
-#             job.booked_by = user
-#             job.available_slot -= 1
-#             job.status = 'A'  # Change status to Accepted
-#             job.save()
-#
-#             messages.success(request, 'Job booked successfully!')
-#         else:
-#             messages.error(request, 'No slots available for this job.')
-#
-#         return redirect('user_home', email=email)
-#
-#
 
 def job_list(request):
     jobs = Jobs.objects.filter(booked_by__isnull=True)  # Show only available jobs
@@ -357,115 +277,6 @@ def admin_signup(request):
 
     return render(request, 'admin_signup.html')
 
-# def profile_edit(request, email):
-#     user = get_object_or_404(UserModel, Q(email__iexact=email))
-#
-#     if request.method == 'POST':
-#         user.name = request.POST.get('name', user.name)
-#         user.age = request.POST.get('age', user.age)
-#         user.phone = request.POST.get('phone', user.phone)
-#         user.place = request.POST.get('location', user.place)
-#         if 'photo' in request.FILES:
-#             user.photo = request.FILES['photo']
-#
-#         # Handle job categories
-#         categories = request.POST.getlist('job_categories')
-#         user.categories = ','.join(categories)
-#
-#         user.save()
-#         messages.success(request, "Profile updated successfully.")
-#         return redirect('profile', email=user.email)
-#
-#     # Pass job categories to the template
-#     job_categories = ['Catering', 'Delivery', 'Painting', 'Cleaning', 'Gardening', 'Moving']
-#     return render(request, "profile_edit.html", {'user': user, 'job_categories': job_categories})
-#
-#
-# def admin_home(request, email):
-#     # Fetch the admin user details using the provided email
-#     user = Owners.objects.filter(email=email)
-#
-#     return render(request, 'admin_home.html', {"user": user})
-#     return render(request, 'profile_edit.html', {'user': user})
-#
-#
-# def admin_profile(request, email):
-#     user = get_object_or_404(Owners, email=email)  # Get the user by email
-#     jobs = Jobs.objects.filter(owner=user)  # Get all jobs for this owner
-#
-#     completed_jobs = jobs.filter(status='A')  # Filter jobs with 'Accepted' status (completed jobs)
-#
-#     context = {
-#         "user": user,
-#         "total_jobs": jobs.count(),
-#         "completed_jobs": completed_jobs.count(),
-#         "jobs": jobs,  # Pass jobs for display (optional)
-#     }
-#     return render(request, "admin_profile.html", context)
-# def admin_profile_edit(request, email):
-#     user = get_object_or_404(Owners, email=email)
-#
-#     if request.method == 'POST':
-#         # Update user details from POST data
-#         user.name = request.POST.get('name', user.name)
-#         user.phone = request.POST.get('phone', user.phone)
-#         user.location = request.POST.get('location', user.location)
-#
-#         if 'photo' in request.FILES:
-#             user.photo = request.FILES['photo']
-#
-#         # Don't save job categories to the database, just process them
-#         selected_categories = request.POST.getlist('job_categories')
-#
-#         # Do something with selected_categories if needed, like logging or sending an email
-#         # But don't save it to the user model
-#
-#         user.save()
-#         messages.success(request, "Profile updated successfully.")
-#         return redirect('admin_profile', email=user.email)
-#
-#     # Display job categories for selection in the form
-#     job_categories = ['Catering', 'Delivery', 'Painting', 'Cleaning', 'Gardening', 'Moving']
-#     return render(request, "profile_edit.html", {'user': user, 'job_categories': job_categories})
-#
-# def status(request, email):
-#     users = Owners.objects.get(email=email)
-#     jobs = Jobs.objects.filter(owner=users).order_by('date', 'time')
-#     user = Owners.objects.filter(email=email)
-#     return render(request, "status.html", {"user": user, "jobs": jobs})
-#
-
-# from django.shortcuts import render, redirect
-# from django.views.decorators.csrf import csrf_exempt
-#
-# # Store submitted data temporarily
-# data_store = {}
-#
-#
-# @csrf_exempt
-# def addslot(request, email):
-#     if request.method == 'POST':
-#         # Get the owner instance
-#         owner = Owners.objects.get(email=email)
-#
-#         # Create new job
-#         job = Jobs.objects.create(
-#             name=request.POST.get('name'),
-#             category=request.POST.get('category'),
-#             location=request.POST.get('location'),
-#             amount=request.POST.get('amount'),
-#             date=request.POST.get('date'),
-#             time=request.POST.get('time'),
-#             available_slot=request.POST.get('available_slot'),
-#             owner=owner,
-#             status='P'  # Default status is Pending
-#         )
-#
-#         return redirect('admin_home', email=email)
-#
-#     return render(request, 'addslot.html', {'user': [{'email': email}]})
-#
-#
 
 def categories(request, name):
     # Get today's date in the project's timezone
@@ -506,3 +317,50 @@ def update_job_status(request, job_id, action):
 
     job.save()
     return redirect('job_list')  # Replace 'job_list' with your actual job listing page URL name
+
+def job_status(request):
+    """View to display the logged-in user's job status."""
+    user = request.user
+    if not user.is_authenticated:
+        messages.error(request, "You need to log in first.")
+        return redirect('login')
+
+    # Fetch jobs booked by the logged-in user's ID
+    jobs = Jobs.objects.filter(booked_by_id=user.id)
+
+    return render(request, 'job_status.html', {'jobs': jobs})
+
+
+def cancel_booking(request, booking_id):
+    booking = get_object_or_404(JobBooking, id=booking_id)
+    if booking.status == 'P':
+        booking.delete()
+        messages.success(request, "Booking cancelled successfully.")
+    else:
+        messages.error(request, "Cannot cancel an accepted or declined booking.")
+    return redirect('job_status')
+
+
+def change_booking_status(request, booking_id):
+    if request.method == "POST":
+        booking = get_object_or_404(JobBooking, id=booking_id)
+        new_status = request.POST.get('status')
+
+        if new_status in ['A', 'D']:
+            if new_status == 'A' and booking.job.get_remaining_slots() <= 0:
+                messages.error(request, "No slots available for this job.")
+            else:
+                booking.status = new_status
+                booking.save()
+                messages.success(request, f"Booking status updated to {booking.get_status_display()}.")
+        else:
+            messages.error(request, "Invalid status update.")
+
+    return redirect('status')
+
+def remove_job(request, job_id):
+    if request.method == "POST":
+        job = get_object_or_404(Jobs, id=job_id)
+        job.delete()
+        messages.success(request, "Job removed successfully.")
+    return redirect('status')  # Redirect to the job status page
